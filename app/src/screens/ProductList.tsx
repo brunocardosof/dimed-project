@@ -1,18 +1,23 @@
-import React from 'react';
+import React, {PureComponent} from 'react';
 import {FlatList, Alert} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 import {
   Card,
   Container,
   ProductImage,
+  ProductPromotion,
   ProductImageContainer,
   ProductInfoContainer,
   ProductInfoName,
   ProductInfoPrice,
+  ProductOriginalPrice,
+  ProductDealPrice,
+  ProductPricePercentage,
+  ProductRelease,
 } from '../components/ProductList';
 import {findAllProducts} from '../services/http/products';
 
-export default class ProductList extends React.Component {
+export default class ProductList extends PureComponent {
   state = {
     search: '',
     products: [],
@@ -26,7 +31,6 @@ export default class ProductList extends React.Component {
     (async () => {
       const response = await findAllProducts();
       this.setState({products: response.data.payload});
-      console.log(response.data.payload);
     })();
   }
   render() {
@@ -36,8 +40,7 @@ export default class ProductList extends React.Component {
         <Container>
           <SearchBar
             lightTheme
-            round
-            placeholder="Type Here..."
+            placeholder="Pesquisar produto..."
             onChangeText={this.updateSearch}
             value={search}
           />
@@ -49,12 +52,32 @@ export default class ProductList extends React.Component {
             renderItem={({item: product, index}) => (
               <Card key={index}>
                 <ProductImageContainer>
+                  {Object.keys(product.price).length > 1 && (
+                    <ProductPromotion>
+                      <ProductPricePercentage>-33%</ProductPricePercentage>
+                      <ProductRelease>Lançamento</ProductRelease>
+                    </ProductPromotion>
+                  )}
                   <ProductImage source={{uri: product.images[0]}} />
                 </ProductImageContainer>
                 <ProductInfoContainer>
                   <ProductInfoName>{product.name}</ProductInfoName>
                   <ProductInfoPrice>
-                    {product.price.originalPrice}
+                    {Object.keys(product.price).length > 1 ? (
+                      <>
+                        <ProductOriginalPrice>
+                          De R$ {product.price.dealPrice}
+                        </ProductOriginalPrice>
+                        <ProductDealPrice>
+                          {' '}
+                          Por R$ {product.price.originalPrice}
+                        </ProductDealPrice>
+                      </>
+                    ) : (
+                      <ProductOriginalPrice>
+                        Por R$ {product.price.originalPrice}
+                      </ProductOriginalPrice>
+                    )}
                   </ProductInfoPrice>
                 </ProductInfoContainer>
               </Card>
