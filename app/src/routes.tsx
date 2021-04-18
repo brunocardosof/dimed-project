@@ -1,6 +1,6 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import ProductList from './pages/ProductList';
+import ProductList from './screens/ProductList';
 
 const RouteStack = createStackNavigator();
 
