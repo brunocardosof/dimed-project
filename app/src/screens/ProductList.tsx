@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {FlatList, Alert} from 'react-native';
 import {SearchBar} from 'react-native-elements';
+import {connect} from 'react-redux';
+import {findAllProducts} from '../actions/productActions';
 import {
   Card,
   Container,
@@ -15,9 +17,8 @@ import {
   ProductPricePercentage,
   ProductRelease,
 } from '../components/ProductList';
-import {findAllProducts} from '../services/http/products';
 
-export default class ProductList extends PureComponent {
+class ProductList extends PureComponent<any, any> {
   state = {
     search: '',
     products: [],
@@ -29,14 +30,13 @@ export default class ProductList extends PureComponent {
 
   componentDidMount() {
     (async () => {
-      const response = await findAllProducts();
-      this.setState({products: response.data.payload});
+      await this.props.findAllProducts();
     })();
   }
   render() {
     const {search} = this.state;
     return (
-      this.state.products.length !== 0 && (
+      this.props.products.length !== 0 && (
         <Container>
           <SearchBar
             lightTheme
@@ -45,7 +45,7 @@ export default class ProductList extends PureComponent {
             value={search}
           />
           <FlatList
-            data={this.state.products}
+            data={this.props.products}
             keyExtractor={(product: any) => String(product.id)}
             onEndReachedThreshold={0.3}
             onEndReached={() => Alert.alert('Oi')}
@@ -88,3 +88,17 @@ export default class ProductList extends PureComponent {
     );
   }
 }
+const mapStateToProps = (state: any, props: any) => {
+  return {
+    products: state.products,
+  };
+};
+
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    findAllProducts: () => {
+      dispatch(findAllProducts());
+    },
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(ProductList);
