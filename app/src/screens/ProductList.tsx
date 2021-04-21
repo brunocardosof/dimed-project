@@ -1,8 +1,11 @@
+/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import {FlatList} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {SearchBar} from 'react-native-elements';
 import {connect} from 'react-redux';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {findAllProducts} from '../actions/productActions';
 import {
   Card,
@@ -20,6 +23,15 @@ import {
   ProductRelease,
 } from '../components/ProductList';
 
+type RootStackParamList = {
+  ProductDetail: {product: Product};
+  Camera: undefined;
+};
+
+type ProductListScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'ProductDetail'
+>;
 interface Price {
   originalPrice: number;
   dealPrice?: number;
@@ -38,18 +50,23 @@ interface State {
   products: Product[];
   fullDataProducts: Product[];
 }
+interface Props {
+  products: Product[];
+  fullDataProducts: Product[];
+  navigation: ProductListScreenNavigationProp;
+  findAllProducts: any;
+}
 
-class ProductList extends React.Component<any, any> {
+class ProductList extends React.Component<Props, State> {
   state = {
     search: '',
-    updateSearch: false,
     products: [],
     fullDataProducts: [],
   };
 
-  updateSearch = text => {
+  updateSearch = (text: string) => {
     this.setState({search: text});
-    const newData = this.state.fullDataProducts.filter(item => {
+    const newData = this.state.fullDataProducts.filter((item: Product) => {
       const itemData = `${item.name.toUpperCase()} ${item.ean}`;
 
       const textData = text.toUpperCase();
@@ -58,11 +75,8 @@ class ProductList extends React.Component<any, any> {
     });
     this.setState({products: newData});
   };
-  toggleUpdateSearch = () => {
-    this.setState({updateSearch: !this.state.updateSearch});
-  };
 
-  renderProductDetail = product => {
+  renderProductDetail = (product: Product) => {
     this.props.navigation.navigate('ProductDetail', {product});
   };
 
@@ -98,18 +112,20 @@ class ProductList extends React.Component<any, any> {
               borderStyle: 'solid',
               borderColor: '#c3cfd9',
             }}
-            lightTheme
             placeholder="Pesquisar produto..."
+            platform="default"
             onChangeText={text => this.updateSearch(text)}
             value={this.state.search}
           />
-          <Icon
-            name="barcode"
-            size={57}
-            style={{marginTop: 4}}
-            color="#c3cfd9"
-            onPress={() => this.props.navigation.navigate('Camera')}
-          />
+          <TouchableOpacity>
+            <Icon
+              name="barcode"
+              size={57}
+              style={{marginTop: 4}}
+              color="#c3cfd9"
+              onPress={() => this.props.navigation.navigate('Camera')}
+            />
+          </TouchableOpacity>
         </Header>
         <FlatList
           data={this.state.products}
@@ -154,7 +170,7 @@ class ProductList extends React.Component<any, any> {
     );
   }
 }
-const mapStateToProps = (state: any, props: any) => {
+const mapStateToProps = (state: State) => {
   return {
     products: state.products,
     fullDataProducts: state.fullDataProducts,

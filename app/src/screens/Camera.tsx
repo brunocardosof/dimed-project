@@ -1,10 +1,10 @@
 'use strict';
 import React, {PureComponent} from 'react';
-import {RNCamera} from 'react-native-camera';
+import {BarCodeReadEvent, RNCamera} from 'react-native-camera';
 import {Container} from '../components/Camera';
 
 class Camera extends PureComponent<any, any> {
-  onBarCodeRead = e => {
+  onBarCodeRead = (e: BarCodeReadEvent) => {
     this.props.navigation.navigate('ProductDetail', {
       data: e.data,
       type: e.type,
@@ -14,6 +14,12 @@ class Camera extends PureComponent<any, any> {
     return (
       <Container>
         <RNCamera
+          // eslint-disable-next-line react-native/no-inline-styles
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+          }}
           type={RNCamera.Constants.Type.back}
           androidCameraPermissionOptions={{
             title: 'Permission to use camera',
@@ -33,4 +39,5 @@ class Camera extends PureComponent<any, any> {
     );
   }
 }
+
 export default Camera;
