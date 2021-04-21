@@ -22,6 +22,7 @@ import {
   ProductPricePercentage,
   ProductRelease,
 } from '../components/ProductList';
+import {Product} from '../interfaces/Product';
 
 type RootStackParamList = {
   ProductDetail: {product: Product};
@@ -32,19 +33,6 @@ type ProductListScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   'ProductDetail'
 >;
-interface Price {
-  originalPrice: number;
-  dealPrice?: number;
-  percentage?: number;
-}
-interface Product {
-  id: number;
-  ean: number;
-  name: string;
-  images: string[];
-  price: Price;
-}
-
 interface State {
   search: string;
   products: Product[];
