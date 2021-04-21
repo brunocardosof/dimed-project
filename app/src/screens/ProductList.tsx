@@ -1,5 +1,5 @@
-import React, {PureComponent} from 'react';
-import {FlatList, Alert} from 'react-native';
+import React from 'react';
+import {FlatList} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 import {connect} from 'react-redux';
 import {findAllProducts} from '../actions/productActions';
@@ -18,79 +18,134 @@ import {
   ProductRelease,
 } from '../components/ProductList';
 
-class ProductList extends PureComponent<any, any> {
+interface Price {
+  originalPrice: number;
+  dealPrice?: number;
+  percentage?: number;
+}
+interface Product {
+  id: number;
+  ean: number;
+  name: string;
+  images: string[];
+  price: Price;
+}
+
+interface State {
+  search: string;
+  products: Product[];
+  fullDataProducts: Product[];
+}
+
+class ProductList extends React.Component<any, any> {
   state = {
     search: '',
+    updateSearch: false,
     products: [],
+    fullDataProducts: [],
   };
 
-  updateSearch = (search: any) => {
-    this.setState({search});
+  updateSearch = text => {
+    this.setState({search: text});
+    const newData = this.state.fullDataProducts.filter(item => {
+      const itemData = `${item.name.toUpperCase()} ${item.ean}`;
+
+      const textData = text.toUpperCase();
+
+      return itemData.indexOf(textData) > -1;
+    });
+    this.setState({products: newData});
+  };
+  toggleUpdateSearch = () => {
+    this.setState({updateSearch: !this.state.updateSearch});
   };
 
-  componentDidMount() {
-    (async () => {
-      await this.props.findAllProducts();
-    })();
+  renderProductDetail = () => {
+    this.setState({products: []});
+  };
+
+  async componentDidMount() {
+    await this.props.findAllProducts();
   }
+
+  static getDerivedStateFromProps(props: any, state: any) {
+    if (!state.products.length && props.products.length) {
+      return {
+        products: props.products,
+        fullDataProducts: props.fullDataProducts,
+      };
+    }
+    return null;
+  }
+
   render() {
-    const {search} = this.state;
     return (
-      this.props.products.length !== 0 && (
-        <Container>
-          <SearchBar
-            lightTheme
-            placeholder="Pesquisar produto..."
-            onChangeText={this.updateSearch}
-            value={search}
-          />
-          <FlatList
-            data={this.props.products}
-            keyExtractor={(product: any) => String(product.id)}
-            onEndReachedThreshold={0.3}
-            onEndReached={() => Alert.alert('Oi')}
-            renderItem={({item: product, index}) => (
-              <Card key={index}>
-                <ProductImageContainer>
-                  {Object.keys(product.price).length > 1 && (
-                    <ProductPromotion>
-                      <ProductPricePercentage>-33%</ProductPricePercentage>
-                      <ProductRelease>Lançamento</ProductRelease>
-                    </ProductPromotion>
-                  )}
-                  <ProductImage source={{uri: product.images[0]}} />
-                </ProductImageContainer>
-                <ProductInfoContainer>
-                  <ProductInfoName>{product.name}</ProductInfoName>
-                  <ProductInfoPrice>
-                    {Object.keys(product.price).length > 1 ? (
-                      <>
-                        <ProductOriginalPrice>
-                          De R$ {product.price.dealPrice}
-                        </ProductOriginalPrice>
-                        <ProductDealPrice>
-                          {' '}
-                          Por R$ {product.price.originalPrice}
-                        </ProductDealPrice>
-                      </>
-                    ) : (
+      <Container>
+        <SearchBar
+          inputContainerStyle={{
+            backgroundColor: '#c3cfd9',
+          }}
+          containerStyle={{
+            backgroundColor: 'white',
+            borderTopColor: 'white',
+            borderBottomColor: 'white',
+          }}
+          inputStyle={{
+            borderStyle: 'solid',
+            borderColor: '#c3cfd9',
+          }}
+          lightTheme
+          placeholder="Pesquisar produto..."
+          onChangeText={text => this.updateSearch(text)}
+          value={this.state.search}
+        />
+        <FlatList
+          data={this.state.products}
+          keyExtractor={(product: any) => String(product.id)}
+          extraData={this.state}
+          onEndReachedThreshold={0.3}
+          renderItem={({item: product, index}) => (
+            <Card key={index} onPress={() => this.renderProductDetail()}>
+              <ProductImageContainer>
+                {Object.keys(product.price).length > 1 && (
+                  <ProductPromotion>
+                    <ProductPricePercentage>-33%</ProductPricePercentage>
+                    <ProductRelease>Lançamento</ProductRelease>
+                  </ProductPromotion>
+                )}
+                <ProductImage source={{uri: product.images[0]}} />
+              </ProductImageContainer>
+              <ProductInfoContainer>
+                <ProductInfoName>{product.name}</ProductInfoName>
+                <ProductInfoPrice>
+                  {Object.keys(product.price).length > 1 ? (
+                    <>
                       <ProductOriginalPrice>
-                        Por R$ {product.price.originalPrice}
+                        De R$ {product.price.dealPrice}
                       </ProductOriginalPrice>
-                    )}
-                  </ProductInfoPrice>
-                </ProductInfoContainer>
-              </Card>
-            )}
-          />
-        </Container>
-      )
+                      <ProductDealPrice>
+                        {' '}
+                        Por R$ {product.price.originalPrice}
+                      </ProductDealPrice>
+                    </>
+                  ) : (
+                    <ProductOriginalPrice>
+                      Por R$ {product.price.originalPrice}
+                    </ProductOriginalPrice>
+                  )}
+                </ProductInfoPrice>
+              </ProductInfoContainer>
+            </Card>
+          )}
+        />
+      </Container>
     );
   }
 }
 const mapStateToProps = (state: any, props: any) => {
   return {
     products: state.products,
+    fullDataProducts: state.fullDataProducts,
   };
 };
 
