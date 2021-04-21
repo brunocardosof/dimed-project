@@ -2,10 +2,12 @@ import React from 'react';
 import {FlatList} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 import {connect} from 'react-redux';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {findAllProducts} from '../actions/productActions';
 import {
   Card,
   Container,
+  Header,
   ProductImage,
   ProductPromotion,
   ProductImageContainer,
@@ -60,8 +62,8 @@ class ProductList extends React.Component<any, any> {
     this.setState({updateSearch: !this.state.updateSearch});
   };
 
-  renderProductDetail = () => {
-    this.setState({products: []});
+  renderProductDetail = product => {
+    this.props.navigation.navigate('ProductDetail', {product});
   };
 
   async componentDidMount() {
@@ -81,31 +83,41 @@ class ProductList extends React.Component<any, any> {
   render() {
     return (
       <Container>
-        <SearchBar
-          inputContainerStyle={{
-            backgroundColor: '#c3cfd9',
-          }}
-          containerStyle={{
-            backgroundColor: 'white',
-            borderTopColor: 'white',
-            borderBottomColor: 'white',
-          }}
-          inputStyle={{
-            borderStyle: 'solid',
-            borderColor: '#c3cfd9',
-          }}
-          lightTheme
-          placeholder="Pesquisar produto..."
-          onChangeText={text => this.updateSearch(text)}
-          value={this.state.search}
-        />
+        <Header>
+          <SearchBar
+            inputContainerStyle={{
+              backgroundColor: '#c3cfd9',
+            }}
+            containerStyle={{
+              flex: 1,
+              backgroundColor: 'white',
+              borderTopColor: 'white',
+              borderBottomColor: 'white',
+            }}
+            inputStyle={{
+              borderStyle: 'solid',
+              borderColor: '#c3cfd9',
+            }}
+            lightTheme
+            placeholder="Pesquisar produto..."
+            onChangeText={text => this.updateSearch(text)}
+            value={this.state.search}
+          />
+          <Icon
+            name="barcode"
+            size={57}
+            style={{marginTop: 4}}
+            color="#c3cfd9"
+            onPress={() => this.props.navigation.navigate('Camera')}
+          />
+        </Header>
         <FlatList
           data={this.state.products}
           keyExtractor={(product: any) => String(product.id)}
           extraData={this.state}
           onEndReachedThreshold={0.3}
           renderItem={({item: product, index}) => (
-            <Card key={index} onPress={() => this.renderProductDetail()}>
+            <Card key={index} onPress={() => this.renderProductDetail(product)}>
               <ProductImageContainer>
                 {Object.keys(product.price).length > 1 && (
                   <ProductPromotion>
