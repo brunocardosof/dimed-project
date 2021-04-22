@@ -1,11 +1,16 @@
-import React, {PureComponent} from 'react';
-import {FlatList, Alert} from 'react-native';
+/* eslint-disable react-native/no-inline-styles */
+import React from 'react';
+import {FlatList} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import {SearchBar} from 'react-native-elements';
 import {connect} from 'react-redux';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {findAllProducts} from '../actions/productActions';
 import {
   Card,
   Container,
+  Header,
   ProductImage,
   ProductPromotion,
   ProductImageContainer,
@@ -17,80 +22,146 @@ import {
   ProductPricePercentage,
   ProductRelease,
 } from '../components/ProductList';
+import {Product} from '../interfaces/Product';
 
-class ProductList extends PureComponent<any, any> {
+type RootStackParamList = {
+  ProductDetail: {product: Product};
+  Camera: undefined;
+};
+
+type ProductListScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'ProductDetail'
+>;
+interface State {
+  search: string;
+  products: Product[];
+  fullDataProducts: Product[];
+}
+interface Props {
+  products: Product[];
+  fullDataProducts: Product[];
+  navigation: ProductListScreenNavigationProp;
+  findAllProducts: any;
+}
+
+class ProductList extends React.Component<Props, State> {
   state = {
     search: '',
     products: [],
+    fullDataProducts: [],
   };
 
-  updateSearch = (search: any) => {
-    this.setState({search});
+  updateSearch = (text: string) => {
+    this.setState({search: text});
+    const newData = this.state.fullDataProducts.filter((item: Product) => {
+      const itemData = `${item.name.toUpperCase()} ${item.ean}`;
+
+      const textData = text.toUpperCase();
+
+      return itemData.indexOf(textData) > -1;
+    });
+    this.setState({products: newData});
   };
 
-  componentDidMount() {
-    (async () => {
-      await this.props.findAllProducts();
-    })();
+  renderProductDetail = (product: Product) => {
+    this.props.navigation.navigate('ProductDetail', {product});
+  };
+
+  async componentDidMount() {
+    await this.props.findAllProducts();
   }
+
+  static getDerivedStateFromProps(props: any, state: any) {
+    if (!state.products.length && props.products.length) {
+      return {
+        products: props.products,
+        fullDataProducts: props.fullDataProducts,
+      };
+    }
+    return null;
+  }
+
   render() {
-    const {search} = this.state;
     return (
-      this.props.products.length !== 0 && (
-        <Container>
+      <Container>
+        <Header>
           <SearchBar
-            lightTheme
+            inputContainerStyle={{
+              backgroundColor: '#c3cfd9',
+            }}
+            containerStyle={{
+              flex: 1,
+              backgroundColor: 'white',
+              borderTopColor: 'white',
+              borderBottomColor: 'white',
+            }}
+            inputStyle={{
+              borderStyle: 'solid',
+              borderColor: '#c3cfd9',
+            }}
             placeholder="Pesquisar produto..."
-            onChangeText={this.updateSearch}
-            value={search}
+            platform="default"
+            onChangeText={text => this.updateSearch(text)}
+            value={this.state.search}
           />
-          <FlatList
-            data={this.props.products}
-            keyExtractor={(product: any) => String(product.id)}
-            onEndReachedThreshold={0.3}
-            onEndReached={() => Alert.alert('Oi')}
-            renderItem={({item: product, index}) => (
-              <Card key={index}>
-                <ProductImageContainer>
-                  {Object.keys(product.price).length > 1 && (
-                    <ProductPromotion>
-                      <ProductPricePercentage>-33%</ProductPricePercentage>
-                      <ProductRelease>Lançamento</ProductRelease>
-                    </ProductPromotion>
-                  )}
-                  <ProductImage source={{uri: product.images[0]}} />
-                </ProductImageContainer>
-                <ProductInfoContainer>
-                  <ProductInfoName>{product.name}</ProductInfoName>
-                  <ProductInfoPrice>
-                    {Object.keys(product.price).length > 1 ? (
-                      <>
-                        <ProductOriginalPrice>
-                          De R$ {product.price.dealPrice}
-                        </ProductOriginalPrice>
-                        <ProductDealPrice>
-                          {' '}
-                          Por R$ {product.price.originalPrice}
-                        </ProductDealPrice>
-                      </>
-                    ) : (
+          <TouchableOpacity>
+            <Icon
+              name="barcode"
+              size={57}
+              style={{marginTop: 4}}
+              color="#c3cfd9"
+              onPress={() => this.props.navigation.navigate('Camera')}
+            />
+          </TouchableOpacity>
+        </Header>
+        <FlatList
+          data={this.state.products}
+          keyExtractor={(product: any) => String(product.id)}
+          extraData={this.state}
+          onEndReachedThreshold={0.3}
+          renderItem={({item: product, index}) => (
+            <Card key={index} onPress={() => this.renderProductDetail(product)}>
+              <ProductImageContainer>
+                {Object.keys(product.price).length > 1 && (
+                  <ProductPromotion>
+                    <ProductPricePercentage>-33%</ProductPricePercentage>
+                    <ProductRelease>Lançamento</ProductRelease>
+                  </ProductPromotion>
+                )}
+                <ProductImage source={{uri: product.images[0]}} />
+              </ProductImageContainer>
+              <ProductInfoContainer>
+                <ProductInfoName>{product.name}</ProductInfoName>
+                <ProductInfoPrice>
+                  {Object.keys(product.price).length > 1 ? (
+                    <>
                       <ProductOriginalPrice>
-                        Por R$ {product.price.originalPrice}
+                        De R$ {product.price.dealPrice}
                       </ProductOriginalPrice>
-                    )}
-                  </ProductInfoPrice>
-                </ProductInfoContainer>
-              </Card>
-            )}
-          />
-        </Container>
-      )
+                      <ProductDealPrice>
+                        {' '}
+                        Por R$ {product.price.originalPrice}
+                      </ProductDealPrice>
+                    </>
+                  ) : (
+                    <ProductOriginalPrice>
+                      Por R$ {product.price.originalPrice}
+                    </ProductOriginalPrice>
+                  )}
+                </ProductInfoPrice>
+              </ProductInfoContainer>
+            </Card>
+          )}
+        />
+      </Container>
     );
   }
 }
-const mapStateToProps = (state: any, props: any) => {
+const mapStateToProps = (state: State) => {
   return {
     products: state.products,
+    fullDataProducts: state.fullDataProducts,
   };
 };
 

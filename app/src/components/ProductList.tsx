@@ -7,6 +7,12 @@ export const Container = styled.View`
   padding: 10px;
   background-color: #fefefe;
 `;
+export const Header = styled.View`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+`;
 export const Card = styled.TouchableOpacity`
   display: flex;
   flex-direction: row;
