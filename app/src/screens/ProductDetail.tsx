@@ -1,5 +1,6 @@
+/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Swipeable, TouchableOpacity} from 'react-native-gesture-handler';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import {Icon, withBadge} from 'react-native-elements';
 import {connect} from 'react-redux';
@@ -21,21 +22,37 @@ import {
   ContainerQuantity,
   ProductQuantity,
 } from '../components/ProductDetail';
-import {ActivityIndicator, ScrollView, View} from 'react-native';
+import {ActivityIndicator, ScrollView, Text, View} from 'react-native';
 import {
   decrementQuantityMethod,
   findProductById,
   incrementQuantityMethod,
 } from '../actions/productActions';
+import {Product} from '../interfaces/Product';
 class ProductDetail extends React.Component<any, any> {
   state = {
     quantity: 1,
     totalPrice: 0,
+    currentImage: 0,
   };
 
   async componentDidMount() {
     await this.props.findProductById(this.props.productId);
   }
+  swiapeToLeft = () => {
+    const decrementValue = this.state.currentImage - 1;
+    if (decrementValue < 0) {
+      return false;
+    }
+    this.setState({currentImage: decrementValue});
+  };
+  swiapeToRight = () => {
+    const incrementValue = this.state.currentImage + 1;
+    if (this.props.product.images.length === incrementValue) {
+      return false;
+    }
+    this.setState({currentImage: incrementValue});
+  };
   render() {
     const {
       product,
@@ -44,10 +61,11 @@ class ProductDetail extends React.Component<any, any> {
       incrementQuantity,
       decrementQuantity,
     } = this.props;
+    const {currentImage} = this.state;
     if (!product) {
       return (
         <View style={{flex: 1, justifyContent: 'center'}}>
-          <ActivityIndicator size="small" color="#0000ff" />
+          <ActivityIndicator size="large" color="#03bedf" />
         </View>
       );
     }
@@ -67,14 +85,38 @@ class ProductDetail extends React.Component<any, any> {
           />
         </Header>
         <ScrollView>
-          <ProductImageContainer>
-            {Object.keys(product.price).length > 1 && (
-              <ProductPricePercentage>
-                -{product.price.percentage}%
-              </ProductPricePercentage>
-            )}
-            <ProductImage source={{uri: product.images[0]}} />
-          </ProductImageContainer>
+          <Swipeable
+            renderLeftActions={() => <Text style={{color: 'white'}}> </Text>}
+            renderRightActions={() => <Text style={{color: 'white'}}> </Text>}
+            onSwipeableLeftOpen={() => this.swiapeToLeft()}
+            onSwipeableRightOpen={() => this.swiapeToRight()}>
+            <ProductImageContainer>
+              {Object.keys(product.price).length > 1 && (
+                <ProductPricePercentage>
+                  -{product.price.percentage}%
+                </ProductPricePercentage>
+              )}
+              <ProductImage source={{uri: product.images[currentImage]}} />
+            </ProductImageContainer>
+          </Swipeable>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+            }}>
+            {product.images.map((item: Product, index) => (
+              <IconFontAwesome
+                key={index}
+                name="circle"
+                size={10}
+                color={index === currentImage ? '#03bedf' : '#fefefe'}
+                style={{
+                  marginRight: 5,
+                }}
+              />
+            ))}
+          </View>
           <ProductName>{product.name}</ProductName>
           <ContainerProductDescription>
             <ProductDescription>{product.description}</ProductDescription>
