@@ -25,7 +25,7 @@ import {
 import {Product} from '../interfaces/Product';
 
 type RootStackParamList = {
-  ProductDetail: {product: Product};
+  ProductDetail: {productId: number};
   Camera: undefined;
 };
 
@@ -64,8 +64,8 @@ class ProductList extends React.Component<Props, State> {
     this.setState({products: newData});
   };
 
-  renderProductDetail = (product: Product) => {
-    this.props.navigation.navigate('ProductDetail', {product});
+  navigateToProductDetail = (productId: number) => {
+    this.props.navigation.navigate('ProductDetail', {productId});
   };
 
   async componentDidMount() {
@@ -83,6 +83,7 @@ class ProductList extends React.Component<Props, State> {
   }
 
   render() {
+    const {search, products} = this.state;
     return (
       <Container>
         <Header>
@@ -103,65 +104,70 @@ class ProductList extends React.Component<Props, State> {
             placeholder="Pesquisar produto..."
             platform="default"
             onChangeText={text => this.updateSearch(text)}
-            value={this.state.search}
+            value={search}
           />
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => this.props.navigation.navigate('Camera')}>
             <Icon
               name="barcode"
               size={57}
               style={{marginTop: 4}}
               color="#c3cfd9"
-              onPress={() => this.props.navigation.navigate('Camera')}
             />
           </TouchableOpacity>
         </Header>
         <FlatList
-          data={this.state.products}
+          data={products}
           keyExtractor={(product: any) => String(product.id)}
           extraData={this.state}
           onEndReachedThreshold={0.3}
           renderItem={({item: product, index}) => (
-            <Card key={index} onPress={() => this.renderProductDetail(product)}>
-              <ProductImageContainer>
-                {Object.keys(product.price).length > 1 && (
-                  <ProductPromotion>
-                    <ProductPricePercentage>-33%</ProductPricePercentage>
-                    <ProductRelease>Lançamento</ProductRelease>
-                  </ProductPromotion>
-                )}
-                <ProductImage source={{uri: product.images[0]}} />
-              </ProductImageContainer>
-              <ProductInfoContainer>
-                <ProductInfoName>{product.name}</ProductInfoName>
-                <ProductInfoPrice>
-                  {Object.keys(product.price).length > 1 ? (
-                    <>
-                      <ProductOriginalPrice>
-                        De R$ {product.price.dealPrice}
-                      </ProductOriginalPrice>
-                      <ProductDealPrice>
-                        {' '}
-                        Por R$ {product.price.originalPrice}
-                      </ProductDealPrice>
-                    </>
-                  ) : (
-                    <ProductOriginalPrice>
-                      Por R$ {product.price.originalPrice}
-                    </ProductOriginalPrice>
+            <TouchableOpacity
+              onPress={() => this.navigateToProductDetail(product.id)}>
+              <Card key={index}>
+                <ProductImageContainer>
+                  {Object.keys(product.price).length > 1 && (
+                    <ProductPromotion>
+                      <ProductPricePercentage>
+                        -{product.price.percentage}%
+                      </ProductPricePercentage>
+                      <ProductRelease>Lançamento</ProductRelease>
+                    </ProductPromotion>
                   )}
-                </ProductInfoPrice>
-              </ProductInfoContainer>
-            </Card>
+                  <ProductImage source={{uri: product.images[0]}} />
+                </ProductImageContainer>
+                <ProductInfoContainer>
+                  <ProductInfoName>{product.name}</ProductInfoName>
+                  <ProductInfoPrice>
+                    {Object.keys(product.price).length > 1 ? (
+                      <>
+                        <ProductOriginalPrice>
+                          De R$ {product.price.dealPrice}
+                        </ProductOriginalPrice>
+                        <ProductDealPrice>
+                          {' '}
+                          Por R$ {product.price.originalPrice}
+                        </ProductDealPrice>
+                      </>
+                    ) : (
+                      <ProductOriginalPrice>
+                        Por R$ {product.price.originalPrice}
+                      </ProductOriginalPrice>
+                    )}
+                  </ProductInfoPrice>
+                </ProductInfoContainer>
+              </Card>
+            </TouchableOpacity>
           )}
         />
       </Container>
     );
   }
 }
-const mapStateToProps = (state: State) => {
+const mapStateToProps = (store: any) => {
   return {
-    products: state.products,
-    fullDataProducts: state.fullDataProducts,
+    products: store.productsReducer.products,
+    fullDataProducts: store.productsReducer.fullDataProducts,
   };
 };
 

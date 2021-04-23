@@ -13,7 +13,7 @@ export const Header = styled.View`
   justify-content: center;
   align-items: center;
 `;
-export const Card = styled.TouchableOpacity`
+export const Card = styled.View`
   display: flex;
   flex-direction: row;
   justify-content: space-around;
