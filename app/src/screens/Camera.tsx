@@ -5,16 +5,16 @@ import {connect} from 'react-redux';
 import {Container} from '../components/Camera';
 import {Product} from '../interfaces/Product';
 
-interface State {
+interface Props {
   fullDataProducts: Product[];
 }
 
-class Camera extends PureComponent<any, any> {
+class Camera extends PureComponent<any, Props> {
   onBarCodeRead = (e: BarCodeReadEvent) => {
-    const product = this.getProduct(Number(e.data));
-    this.props.navigation.navigate('ProductDetail', {product});
+    const productId = this.getProduct(Number(e.data))[0];
+    this.props.navigation.navigate('ProductDetail', {productId: productId.id});
   };
-  getProduct = (ean: number): Product => {
+  getProduct = (ean: number): Product[] => {
     const product = this.props.fullDataProducts.filter((item: Product) => {
       return item.ean === ean;
     });
@@ -50,9 +50,9 @@ class Camera extends PureComponent<any, any> {
   }
 }
 
-const mapStateToProps = (state: State) => {
+const mapStateToProps = (store: any) => {
   return {
-    fullDataProducts: state.fullDataProducts,
+    fullDataProducts: store.productsReducer.fullDataProducts,
   };
 };
 
