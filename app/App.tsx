@@ -5,20 +5,21 @@ import {createStore, applyMiddleware} from 'redux';
 import {Provider} from 'react-redux';
 import thunk from 'redux-thunk';
 import Routes from './src/routes';
-import rootReducer from './src/reducers/rootReducer';
+import {rootReducer} from './src/reducers/rootReducer';
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
-
-const App: React.FC = () => {
-  return (
-    <>
-      <Provider store={store}>
-        <StatusBar barStyle="default" />
-        <NavigationContainer>
-          <Routes />
-        </NavigationContainer>
-      </Provider>
-    </>
-  );
-};
+class App extends React.Component {
+  render() {
+    return (
+      <>
+        <Provider store={store}>
+          <StatusBar barStyle="default" />
+          <NavigationContainer>
+            <Routes />
+          </NavigationContainer>
+        </Provider>
+      </>
+    );
+  }
+}
 export default App;
