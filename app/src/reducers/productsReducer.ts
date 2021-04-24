@@ -27,6 +27,7 @@ export const productsReducer = (state = initialState, action: any) => {
         product: action.data,
         totalPrice: action.totalPrice,
         price: action.totalPrice,
+        quantity: 1,
       };
     case INCREMENT_QUANTITY:
       return {
