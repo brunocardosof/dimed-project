@@ -9,6 +9,7 @@ produtos: https://github.com/tigrupodimed/server-poc<br><br>
 
 Pontos de consideração:<br><br>
 
+<b>Observações:</b><br>
 As tecnologias para o desenvolvimento do APP deverão ser: react-native, styled-<br>
 component, redux, typescript.<br><br>
 
