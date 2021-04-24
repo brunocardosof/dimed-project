@@ -9,9 +9,9 @@ produtos: https://github.com/tigrupodimed/server-poc<br><br>
 
 Pontos de consideração:<br><br>
 
-<b>Observações:</b><br>
 As tecnologias para o desenvolvimento do APP deverão ser: react-native, styled-<br>
 component, redux, typescript.<br><br>
 
+<b>Observações:</b><br>
 No aplicativo está configurado o IP: 192.168.1.2, para alterar é no arquivo src/service/axios/index.ts;<br><br>
 Criei um carrossel para mostrar produtos com mais de uma imagem, para ativar é so editar algum array de imagem dos objetos no arquivo db-data.ts da api
